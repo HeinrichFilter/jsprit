@@ -1,0 +1,4 @@
+include 'jsprit-analysis'
+include 'jsprit-core'
+include 'jsprit-examples'
+include 'jsprit-instances'

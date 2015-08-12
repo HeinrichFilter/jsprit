@@ -1,0 +1,59 @@
+//apply plugin: 'java'
+subprojects {
+    version "1.6.2-SNAPSHOT"
+
+    apply plugin: 'java'
+    apply plugin: 'maven-publish'
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        /*maven {
+            url "s3://irp-repo/maven/snapshots"
+            credentials(AwsCredentials) {
+                accessKey aws_access_key_id
+                secretKey aws_secret_access_key
+            }
+        }*/
+    }
+
+    task sourceJar(type: Jar, dependsOn: classes) {
+        classifier = 'sources'
+        from sourceSets.main.allSource
+    }
+
+    task javadocJar(type: Jar, dependsOn: javadoc) {
+        classifier = 'javadoc'
+        from javadoc.destinationDir
+    }
+
+    artifacts {
+        archives sourceJar
+        archives javadocJar
+    }
+
+    publishing {
+        publications {
+            mavenJava(MavenPublication) {
+                from components.java
+
+                artifact sourceJar {
+                    classifier "sources"
+                }
+            }
+        }
+        repositories {
+            maven {
+                url "s3://irp-repo/maven/snapshots"
+                credentials(AwsCredentials) {
+                    accessKey aws_access_key_id
+                    secretKey aws_secret_access_key
+                }
+            }
+        }
+    }
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.5'
+}

@@ -1,6 +1,7 @@
-/bin
-/target
-/output
+bin/
+build/
+target/
+output/
 .DS_Store
 
 # IntelliJ
@@ -12,3 +13,5 @@
 # Eclipse
 .project
 .classpath
+
+.gradle/

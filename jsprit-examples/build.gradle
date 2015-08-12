@@ -1,0 +1,5 @@
+dependencies {
+    compile project(":jsprit-core")
+    compile project(":jsprit-analysis")
+    compile project(":jsprit-instances")
+}
