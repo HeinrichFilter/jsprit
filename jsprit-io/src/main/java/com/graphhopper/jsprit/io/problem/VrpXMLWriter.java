@@ -105,9 +105,9 @@ public class VrpXMLWriter {
         }
     }
 
-    public OutputStream write() {
+    public ByteArrayOutputStream write() {
         XMLConf xmlConfig = createXMLConfiguration();
-        OutputStream out = new ByteArrayOutputStream();
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         try {
             XMLSerializer serializer = new XMLSerializer(out, createOutputFormat());
@@ -213,7 +213,7 @@ public class VrpXMLWriter {
             List<VehicleRoute> list = new ArrayList<VehicleRoute>(solution.getRoutes());
             Collections.sort(list , new VehicleIndexComparator());
             for (VehicleRoute route : list) {
-//				xmlConfig.setProperty(solutionPath + "(" + counter + ").routes.route(" + routeCounter + ").cost", route.getCost());
+                xmlConfig.setProperty(solutionPath + "(" + counter + ").routes.route(" + routeCounter + ").cost", calculateRouteCost(route));
                 xmlConfig.setProperty(solutionPath + "(" + counter + ").routes.route(" + routeCounter + ").driverId", route.getDriver().getId());
                 xmlConfig.setProperty(solutionPath + "(" + counter + ").routes.route(" + routeCounter + ").vehicleId", route.getVehicle().getId());
                 xmlConfig.setProperty(solutionPath + "(" + counter + ").routes.route(" + routeCounter + ").start", route.getStart().getEndTime());
@@ -246,6 +246,24 @@ public class VrpXMLWriter {
             }
             counter++;
         }
+    }
+
+    private double calculateRouteCost(VehicleRoute route) {
+        double costs = 0;
+        TourActivity prevAct = route.getStart();
+        for (TourActivity act : route.getActivities()) {
+            double c = vrp.getTransportCosts().getTransportCost(prevAct.getLocation(), act.getLocation(), prevAct.getEndTime(), route.getDriver(),
+                route.getVehicle());
+            c += vrp.getActivityCosts().getActivityCost(act, act.getArrTime(), route.getDriver(), route.getVehicle());
+            costs += c;
+            prevAct = act;
+        }
+        double c = vrp.getTransportCosts().getTransportCost(prevAct.getLocation(), route.getEnd().getLocation(), prevAct.getEndTime(),
+            route.getDriver(), route.getVehicle());
+        c += vrp.getActivityCosts().getActivityCost(route.getEnd(), route.getEnd().getArrTime(), route.getDriver(), route.getVehicle());
+        costs += c;
+
+        return costs;
     }
 
     private void writeServices(XMLConf xmlConfig, List<Job> jobs) {
