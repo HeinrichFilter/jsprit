@@ -27,11 +27,12 @@ import static org.junit.Assert.*;
 public class CapacityTest {
 
     @Test
-    public void whenSettingSimplyOneCapDimension_nuOfDimensionMustBeCorrect() {
+    public void whenSettingSimplyOneCapDimension_dimensionMustBeCorrect() {
         Capacity.Builder capBuilder = Capacity.Builder.newInstance();
         capBuilder.addDimension(0, 4);
         Capacity cap = capBuilder.build();
         assertEquals(1, cap.getNuOfDimensions());
+        assertEquals(4, cap.get(0));
     }
 
     @Test
@@ -41,24 +42,6 @@ public class CapacityTest {
         capBuilder.addDimension(1, 10);
         Capacity cap = capBuilder.build();
         assertEquals(2, cap.getNuOfDimensions());
-    }
-
-    @Test
-    public void whenSettingRandomNuOfCapDimension_nuOfDimensionMustBeCorrect() {
-        Random rand = new Random();
-        int nuOfCapDimensions = 1 + rand.nextInt(100);
-        Capacity.Builder capBuilder = Capacity.Builder.newInstance();
-        capBuilder.addDimension(nuOfCapDimensions - 1, 4);
-        Capacity cap = capBuilder.build();
-        assertEquals(nuOfCapDimensions, cap.getNuOfDimensions());
-    }
-
-    @Test
-    public void whenSettingOneDimValue_valueMustBeCorrect() {
-        Capacity.Builder capBuilder = Capacity.Builder.newInstance();
-        capBuilder.addDimension(0, 4);
-        Capacity cap = capBuilder.build();
-        assertEquals(4, cap.get(0));
     }
 
     @Test
@@ -123,18 +106,11 @@ public class CapacityTest {
     }
 
     @Test
-    public void whenAddingUpTwoThreeDimensionalCapacities_itShouldReturnCorrectNuOfDimensions() {
+    public void whenAddingUpTwoThreeDimensionalCapacities_itShouldReturnCorrectDimensions() {
         Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 1).addDimension(1, 2).addDimension(2, 3).build();
         Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
         Capacity result = Capacity.addup(cap1, cap2);
         assertEquals(3, result.getNuOfDimensions());
-    }
-
-    @Test
-    public void whenAddingUpTwoThreeDimensionalCapacities_itShouldReturnCorrectCapValues() {
-        Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 1).addDimension(1, 2).addDimension(2, 3).build();
-        Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
-        Capacity result = Capacity.addup(cap1, cap2);
         assertEquals(3, result.get(0));
         assertEquals(5, result.get(1));
         assertEquals(7, result.get(2));
@@ -157,34 +133,22 @@ public class CapacityTest {
 
 
     @Test
-    public void whenSubtractingTwoOneDimensionalCapacities_itShouldReturnCorrectCapacityValues() {
+    public void whenSubtractingTwoOneDimensionalCapacities_itShouldReturnDimensions() {
         Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 1).build();
         Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).build();
         Capacity result = Capacity.subtract(cap2, cap1);
         assertEquals(1, result.get(0));
-    }
-
-    @Test
-    public void whenSubtractingTwoOneDimensionalCapacities_itShouldReturnCorrectNuOfDimensions() {
-        Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 1).build();
-        Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).build();
-        Capacity result = Capacity.subtract(cap2, cap1);
         assertEquals(1, result.getNuOfDimensions());
     }
 
     @Test
-    public void whenSubtractingTwoThreeDimensionalCapacities_itShouldReturnCorrectNuOfDimensions() {
+    public void whenSubtractingTwoThreeDimensionalCapacities_itShouldReturnCorrectDimensions() {
         Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 1).addDimension(1, 2).addDimension(2, 3).build();
         Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
-        Capacity result = Capacity.subtract(cap2, cap1);
-        assertEquals(3, result.getNuOfDimensions());
-    }
 
-    @Test
-    public void whenSubtractingTwoThreeDimensionalCapacities_itShouldReturnCorrectCapValues() {
-        Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 1).addDimension(1, 2).addDimension(2, 3).build();
-        Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
         Capacity result = Capacity.subtract(cap2, cap1);
+
+        assertEquals(3, result.getNuOfDimensions());
         assertEquals(1, result.get(0));
         assertEquals(1, result.get(1));
         assertEquals(1, result.get(2));
@@ -224,6 +188,14 @@ public class CapacityTest {
     }
 
     @Test
+    public void defaultEmptyCapIsLessThanDefined_itShouldReturnCorrectBoolean() {
+        Capacity defaultEmptyCap = Capacity.Builder.newInstance().build();
+        Capacity capWithValue = Capacity.Builder.newInstance().addDimension(0, 1).build();
+        assertFalse(capWithValue.isLessOrEqual(defaultEmptyCap));
+        assertTrue(defaultEmptyCap.isLessOrEqual(capWithValue));
+    }
+
+    @Test
     public void whenOneCapIsLessThanAnother_itShouldReturnCorrectBoolean_v2() {
         Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 2).addDimension(2, 4).build();
         Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
@@ -242,14 +214,9 @@ public class CapacityTest {
         Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
         Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 4).addDimension(2, 4).build();
         assertFalse(cap2.isLessOrEqual(cap1));
-    }
-
-    @Test
-    public void whenOneCapIsBiggerThanAnother_greaterOrEqualShouldReturnTrue() {
-        Capacity cap1 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 3).addDimension(2, 4).build();
-        Capacity cap2 = Capacity.Builder.newInstance().addDimension(0, 2).addDimension(1, 4).addDimension(2, 4).build();
         assertTrue(cap2.isGreaterOrEqual(cap1));
     }
+
 
     @Test
     public void whenOneCapIsBiggerThanAnother_greaterOrEqualShouldReturnTrue_v2() {
@@ -291,6 +258,20 @@ public class CapacityTest {
         assertEquals(1, wheelChair_plus_passenger.get(wheelChairSpace));
         assertEquals(1, wheelChair_plus_passenger.get(passengerSeats));
         assertEquals(110, wheelChair_plus_passenger.get(weight));
+        assertFalse(wheelChair_plus_passenger.isLessOrEqual(cap1));
+    }
+
+    @Test
+    public void whenAddingTwoCapacitiesWithStringIndexes_itShouldReturnCorrectCap_v2() {
+        Capacity cap1 = Capacity.Builder.newInstance().addDimension("wheelChairSpace", 2).addDimension("passengerSeats", 10).addDimension("weight", 100).build();
+        Capacity wheelChair = Capacity.Builder.newInstance().addDimension("wheelChairSpace", 1).addDimension("weight", 80).build();
+        Capacity passenger = Capacity.Builder.newInstance().addDimension("passengerSeats", 1).addDimension("weight", 30).build();
+
+        Capacity wheelChair_plus_passenger = Capacity.addup(wheelChair, passenger);
+
+        assertEquals(1, wheelChair_plus_passenger.get("wheelChairSpace"));
+        assertEquals(1, wheelChair_plus_passenger.get("passengerSeats"));
+        assertEquals(110, wheelChair_plus_passenger.get("weight"));
         assertFalse(wheelChair_plus_passenger.isLessOrEqual(cap1));
     }
 

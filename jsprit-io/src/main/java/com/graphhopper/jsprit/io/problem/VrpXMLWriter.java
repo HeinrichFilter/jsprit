@@ -17,9 +17,11 @@
  */
 package com.graphhopper.jsprit.io.problem;
 
+import com.graphhopper.jsprit.core.problem.Capacity;
 import com.graphhopper.jsprit.core.problem.Location;
 import com.graphhopper.jsprit.core.problem.Skills;
 import com.graphhopper.jsprit.core.problem.VehicleRoutingProblem;
+import com.graphhopper.jsprit.core.problem.constraint.Constraint;
 import com.graphhopper.jsprit.core.problem.job.Break;
 import com.graphhopper.jsprit.core.problem.job.Job;
 import com.graphhopper.jsprit.core.problem.job.Service;
@@ -283,10 +285,8 @@ public class VrpXMLWriter {
             if (service.getLocation().getIndex() != Location.NO_INDEX) {
                 xmlConfig.setProperty(shipmentPathString + "(" + counter + ").location.index", service.getLocation().getIndex());
             }
-            for (int i = 0; i < service.getSize().getNuOfDimensions(); i++) {
-                xmlConfig.setProperty(shipmentPathString + "(" + counter + ").capacity-dimensions.dimension(" + i + ")[@index]", i);
-                xmlConfig.setProperty(shipmentPathString + "(" + counter + ").capacity-dimensions.dimension(" + i + ")", service.getSize().get(i));
-            }
+
+            writeCapacityDimensions(xmlConfig, shipmentPathString, counter, service.getSize());
 
             Collection<TimeWindow> tws = service.getTimeWindows();
             int index = 0;
@@ -310,6 +310,7 @@ public class VrpXMLWriter {
             counter++;
         }
     }
+
 
     private void writeShipments(XMLConf xmlConfig, List<Job> jobs) {
         String shipmentPathString = "shipments.shipment";
@@ -357,10 +358,7 @@ public class VrpXMLWriter {
             	++index;
             }
 
-            for (int i = 0; i < shipment.getSize().getNuOfDimensions(); i++) {
-                xmlConfig.setProperty(shipmentPathString + "(" + counter + ").capacity-dimensions.dimension(" + i + ")[@index]", i);
-                xmlConfig.setProperty(shipmentPathString + "(" + counter + ").capacity-dimensions.dimension(" + i + ")", shipment.getSize().get(i));
-            }
+            writeCapacityDimensions(xmlConfig, shipmentPathString, counter, shipment.getSize());
 
             //skills
             String skillString = getSkillString(shipment);
@@ -433,10 +431,7 @@ public class VrpXMLWriter {
         for (VehicleType type : vrp.getTypes()) {
             xmlConfig.setProperty(typePathString + "(" + typeCounter + ").id", type.getTypeId());
 
-            for (int i = 0; i < type.getCapacityDimensions().getNuOfDimensions(); i++) {
-                xmlConfig.setProperty(typePathString + "(" + typeCounter + ").capacity-dimensions.dimension(" + i + ")[@index]", i);
-                xmlConfig.setProperty(typePathString + "(" + typeCounter + ").capacity-dimensions.dimension(" + i + ")", type.getCapacityDimensions().get(i));
-            }
+            writeCapacityDimensions(xmlConfig, typePathString, typeCounter, type.getCapacityDimensions());
 
             xmlConfig.setProperty(typePathString + "(" + typeCounter + ").costs.fixed", type.getVehicleCostParams().fix);
             xmlConfig.setProperty(typePathString + "(" + typeCounter + ").costs.distance", type.getVehicleCostParams().perDistanceUnit);
@@ -447,6 +442,21 @@ public class VrpXMLWriter {
         }
 
 
+    }
+
+    private void writeCapacityDimensions(XMLConfiguration xmlConfig, String parentPathString, int counter, Capacity capacity) {
+        int dimCounter = 0;
+        for (String dimName : capacity.getDimensionNames()) {
+            xmlConfig.setProperty(parentPathString + "(" + counter + ").capacity-dimensions.dimension(" + dimCounter + ")[@index]", dimName);
+            xmlConfig.setProperty(parentPathString + "(" + counter + ").capacity-dimensions.dimension(" + dimCounter + ")", capacity.get(dimName));
+            ++dimCounter;
+        }
+
+        //Write default capacity if nothig is specified
+        if (capacity.getDimensionNames().size() == 0) {
+            xmlConfig.setProperty(parentPathString + "(" + counter + ").capacity-dimensions.dimension(" + dimCounter + ")[@index]", 0);
+            xmlConfig.setProperty(parentPathString + "(" + counter + ").capacity-dimensions.dimension(" + dimCounter + ")", 0);
+        }
     }
 
     private String getSkillString(Vehicle vehicle) {
