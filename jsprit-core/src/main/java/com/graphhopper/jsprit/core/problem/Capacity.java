@@ -43,11 +43,19 @@ public class Capacity {
      */
     public static Capacity addup(Capacity cap1, Capacity cap2) {
         if (cap1 == null || cap2 == null) throw new NullPointerException("arguments must not be null");
-        Capacity.Builder capacityBuilder = Capacity.Builder.newInstance();
-        for(String i : getAllKeys(cap1, cap2)) {
-            capacityBuilder.addDimension(i, cap1.get(i) + cap2.get(i));
+
+        Map<String, Integer> newCapacityDimensions = new HashMap<>(cap1.dimensions);
+        for (Map.Entry<String, Integer> dimension : cap2.dimensions.entrySet()) {
+            String key = dimension.getKey();
+
+            if (newCapacityDimensions.containsKey(key)) {
+                newCapacityDimensions.put(key, newCapacityDimensions.get(key) + dimension.getValue());
+            } else {
+                newCapacityDimensions.put(key, dimension.getValue());
+            }
         }
-        return capacityBuilder.build();
+
+        return new Capacity(newCapacityDimensions);
     }
 
     /**
@@ -199,7 +207,14 @@ public class Capacity {
         this.dimensions = new HashMap<>(capacity.dimensions);
     }
 
+
+    Capacity(Map<String, Integer> capacityDimensions) {
+        this.dimensions = capacityDimensions;
+    }
+
+
     Capacity(Builder builder) {
+        //This is currently only used from `addup` where a new Map is already instantiated
         dimensions = builder.dimensions;
     }
 
